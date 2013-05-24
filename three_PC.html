@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>new_file</title>
+
+		<style>
+			body {
+				font-family: Monospace;
+				opacity: 1;
+				background-color: 'transparent';
+				margin: 0px;
+				overflow: hidden;
+			}
+			.element {
+				/*				width: 500px;
+				 height: 500px;*/
+				box-shadow: 0px 0px 20px rgba(0,255,255,0.5);
+				border: 1px solid rgba(127,255,255,0.25);
+				cursor: default;
+			}
+
+			.element:hover {
+				box-shadow: 0px 0px 20px rgba(0,255,255,0.75);
+				border: 1px solid rgba(127,255,255,0.75);
+			}
+
+			.element .number {
+				position: absolute;
+				top: 20px;
+				right: 20px;
+				font-size: 20px;
+				color: rgba(127,255,255,0.75);
+			}
+
+			.element .symbol {
+				position: absolute;
+				top: 0px;
+				width: 100%;
+				font-size: 35px;
+				text-align: center;
+				color: rgba(255,255,255,0.75);
+				font-weight: bold;
+				-webkit-filter: drop-shadow(0px 0px 20px rgba(0,255,255,0.95));
+				-moz-filter: drop-shadow(0px 0px 20px rgba(0,255,255,0.95));
+				-o-filter: drop-shadow(0px 0px 20px rgba(0,255,255,0.95));
+				-ms-filter: drop-shadow(0px 0px 20px rgba(0,255,255,0.95));
+				filter: drop-shadow(0px 0px 20px rgba(0,255,255,0.95));
+			}
+
+			.element .details {
+				position: absolute;
+				top: 125px;
+				width: 100%;
+				font-size: 18px;
+				text-align: center;
+				color: rgba(127,255,255,0.75);
+			}
+
+			button {
+				color: rgba(111,255,255,0.75);
+				/*				background: transparent;*/
+				outline: 3px solid rgba(127,255,255,0.75);
+				border: 0px;
+				padding: 20px 20px;
+				cursor: pointer;
+			}
+			/*			button:hover {
+			 background-color: rgba(255,255,255,0.5);
+			 }*/
+			button:active {
+
+				color: #111111;
+				background-color: rgba(0,255,255,0.75);
+			}
+
+		</style>
+	</head>
+
+	<body>
+
+		<div id="show" style="position: absolute; top: 10px; width: 100%;text-align: center;">
+			Text:
+		</div >
+
+		<div id="containerCSS3D" style="position: absolute;width: 100%;text-align: center;"></div>
+		<!-- 		<div id="show">
+		Text:
+		</div> -->
+		<script src="three.min.js" type="text/javascript"></script>
+		<script src="helvetiker_regular.typeface.js"></script>
+		<script src="CSS3DRenderer.js"></script>
+		<!-- 		<div id="container"></div> -->
+		<!-- 		<div id="containerCSS3D"></div> -->
+		<script type="text/javascript">
+			var renderer;
+			var rendererCSS3D;
+			var projector;
+			var container;
+			var containerCSS3D;
+			var mouse = new THREE.Vector2()
+			var INTERSECTED, SELECTED;
+			var buttons = [];
+			var objects = [];
+			var parent = new THREE.Object3D();
+			var windowHalfX = window.innerWidth / 2;
+			var windowHalfY = window.innerHeight / 2;
+			var a;
+			var table = [];
+			var blank = 0;
+			function initThree() {
+
+				container = document.createElement('div');
+				document.body.appendChild(container);
+				//containerCSS3D = document.createElement('div');
+				containerCSS3D = document.getElementById("containerCSS3D");
+
+			}
+
+			function initRendererCSS3D() {
+				//the renderer for the texts
+				rendererCSS3D = new THREE.CSS3DRenderer({
+					//antialias : true
+				});
+				rendererCSS3D.setSize(window.innerWidth, window.innerHeight);
+				containerCSS3D.appendChild(rendererCSS3D.domElement);
+
+			}
+
+			function initRenderer() {
+
+				//the renderer for the shapes
+
+				renderer = new THREE.CanvasRenderer({
+					antialias : true
+				});
+				renderer.setSize(window.innerWidth, window.innerHeight);
+				container.appendChild(renderer.domElement);
+
+			}
+
+			//Define the camera through which we spec the terre
+			var camera;
+			function initCamera() {
+				camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 10000);
+				camera.position.z = 1000;
+				projector = new THREE.Projector();
+				//camera.position.y = 200;
+				//camera.position.x = 200;
+			}
+
+			var scene;
+			function initScene() {
+				scene = new THREE.Scene();
+			}
+
+			function initParent() {
+				scene.add(parent);
+			}
+
+			var light;
+			function initLight() {
+				light = new THREE.DirectionalLight(0xFFFFFF, 0.5, 0);
+				light.position.set(0, 0, 300);
+				scene.add(light);
+			}
+
+			var SpecialKey = {
+				createNew : function(position, positionY, string) {
+					var specialKey = {};
+					specialKey.position = position;
+					specialKey.positionY = positionY;
+					//specialKey.angle = angle;
+					specialKey.string = string;
+					specialKey.text
+					specialKey.mesh
+					// specialKey.initShape = function() {
+					// specialKey.angle = angle;
+					// var shape = new THREE.Shape();
+					// var length = 200;
+					// shape.moveTo(length, 0);
+					// //shape2.absarc(0, 0, 300, 0, Math.PI/3 , false);
+					// shape.lineTo(length * 1.3, 0);
+					// shape.absarc(0, 0, length * 1.3, 0, Math.PI / 3, true);
+					// shape.lineTo(length * 0.75 * 2 / 3, length * 0.75 * Math.sqrt(3) * 2 / 3);
+					// var geometry = new THREE.ShapeGeometry(shape);
+					// var material = new THREE.MeshBasicMaterial({
+					// opacity : 0.7,
+					// transparent : true,
+					// color : 0x112271,
+					//
+					// });
+					// specialKey.mesh = new THREE.Mesh(geometry, material);
+					// specialKey.mesh.position.set(0, 0, 500);
+					// specialKey.mesh.rotation.set(0, 0, specialKey.angle);
+					// specialKey.mesh.name = specialKey.string;
+					// //mesh.rotation.z=angle;
+					// scene.add(specialKey.mesh);
+					// buttons.push(specialKey.mesh);
+					// }
+
+					specialKey.initShape = function() {
+						var shape = new THREE.Shape();
+						var length = 120;
+						var width = 50;
+						shape.moveTo(0, 0);
+						//shape2.absarc(0, 0, 300, 0, Math.PI/3 , false);
+						shape.lineTo(length, 0);
+						shape.lineTo(length, width);
+						shape.lineTo(0, width);
+						shape.lineTo(0, 0);
+
+						var geometry = new THREE.CubeGeometry(120, 50, 1);
+						var material = new THREE.MeshBasicMaterial({
+							opacity : 0.7,
+							//map : THREE.ImageUtils.loadTexture("B.jpg"),
+							transparent : true,
+							color : 0x112271
+						});
+						// var geometry = new THREE.ShapeGeometry(shape);
+						// var material = new THREE.MeshBasicMaterial({
+						// opacity : 0.7,
+						// transparent : true,
+						// color : 0x112271,
+						// });
+						specialKey.mesh = new THREE.Mesh(geometry, material);
+						specialKey.mesh.position.set(specialKey.position + 50, specialKey.positionY, 300);
+						//specialKey.mesh.rotation.set(0, 0, specialKey.angle);
+						specialKey.mesh.name = specialKey.string;
+						//mesh.rotation.z=angle;
+						scene.add(specialKey.mesh);
+						buttons.push(specialKey.mesh);
+					}
+					specialKey.initText = function() {
+						var element = document.createElement('div');
+						element.className = 'element';
+						element.style.backgroundColor = 'rgba(0,127,127,' + (Math.random() * 0.5 + 0.25 ) + ')';
+						var symbol = document.createElement('div');
+						symbol.className = 'symbol';
+						symbol.textContent = specialKey.string;
+						element.appendChild(symbol);
+						var object = new THREE.CSS3DObject(element);
+						object.position.x = specialKey.position;
+						object.position.y = specialKey.positionY + 25;
+						object.position.z = 300;
+						scene.add(object);
+					}
+					specialKey.initShape();
+					specialKey.initText();
+					return specialKey;
+				}
+			}
+
+			var Key = {
+				createNew : function(string, angle1, angle2) {
+					var key = {};
+					key.cube
+					key.text
+					key.hexa
+					key.string = string;
+					key.angle1 = angle1;
+					key.angle2 = angle2;
+					key.vector
+					key.length
+					key.x = Math.cos(key.angle1) * Math.cos(key.angle2);
+					key.z = Math.sin(key.angle1) * Math.cos(key.angle2);
+					key.y = Math.sin(angle2);
+
+					key.initHexa = function() {
+						var vertex = new THREE.Vector3(key.x, key.y, key.z);
+						vertex.normalize();
+						vertex.multiplyScalar(400);
+
+						var shape = new THREE.Shape();
+						key.length = 80;
+						shape.moveTo(key.length, 0);
+						shape.lineTo(0.5 * key.length, 0.5 * key.length * Math.sqrt(3));
+						shape.lineTo(-0.5 * key.length, 0.5 * key.length * Math.sqrt(3));
+						shape.lineTo(-key.length, 0);
+						shape.lineTo(-0.5 * key.length, -0.5 * key.length * Math.sqrt(3));
+						shape.lineTo(0.5 * key.length, -0.5 * key.length * Math.sqrt(3));
+						shape.lineTo(key.length, 0);
+						//shape.absarc(10, 10, 40, 0, Math.PI * 2, false);
+						//shape.absarc(0, 0, 50, 1, Math.PI , false);
+						var points = shape.createPointsGeometry();
+						var spacedPoints = shape.createSpacedPointsGeometry(100);
+						var geometry = new THREE.ShapeGeometry(shape);
+						var material = new THREE.MeshLambertMaterial({
+							opacity : 0.9,
+							//transparent : true,
+							color : 0x0078FF,
+							// wireframe: true
+
+						});
+						key.hexa = new THREE.Mesh(geometry, material);
+						key.hexa.position.set(vertex.x, vertex.y, vertex.z);
+						var vertor = new THREE.Vector3(vertex.x * 2, vertex.y * 2, vertex.z * 2);
+						key.hexa.lookAt(vertor);
+						key.hexa.name = key.string;
+						buttons.push(key.hexa);
+						parent.add(key.hexa);
+						//mesh.scale.set(1, 1, 1);
+					}
+					key.initText = function() {
+						var element = document.createElement('div');
+						element.className = 'element';
+						element.style.backgroundColor = 'rgba(0,127,127,' + (Math.random() * 0.5 + 0.25 ) + ')';
+						var symbol = document.createElement('div');
+						symbol.className = 'symbol';
+						symbol.textContent = key.string;
+						element.appendChild(symbol);
+						key.text = new THREE.CSS3DObject(element);
+						//
+						var vertex = new THREE.Vector3(key.x, key.y, key.z);
+						vertex.normalize();
+						vertex.multiplyScalar(400);
+						key.text.position.x = vertex.x;
+						key.text.position.y = vertex.y;
+						key.text.position.z = vertex.z;
+						// text.rotation.x = 0;
+						// key.text.rotation.y = 3.14 / 2 - angle1;
+						key.vertor = new THREE.Vector3(vertex.x * 2, vertex.y * 2, vertex.z * 2);
+						if (key.text.position.z > 0) {
+							key.text.lookAt(key.vertor);
+						} else {
+							key.text.lookAt(scene.position);
+						}
+						// object.position.x = 200 * Math.cos(specialKey.angle + Math.PI / 6);
+						// object.position.y = 200 * Math.sin(specialKey.angle + Math.PI / 6);
+						// object.position.z = 500;
+						// scene.add(object);
+						parent.add(key.text);
+
+						// var text3d = new THREE.TextGeometry(key.string, {
+						// size : 30,
+						// height : 1,
+						// curveSegments : 1,
+						// // font : "helvetiker"
+						// });
+						//
+						// text3d.computeBoundingBox();
+						//
+						// var textMaterial = new THREE.MeshBasicMaterial({
+						// color : 0x000000,
+						// overdraw : true
+						// });
+						// key.text = new THREE.Mesh(text3d, textMaterial);
+						//
+						// var vertex = new THREE.Vector3(key.x, key.y, key.z);
+						// vertex.normalize();
+						// vertex.multiplyScalar(500);
+						// key.text.position.x = vertex.x;
+						// key.text.position.y = vertex.y;
+						// key.text.position.z = vertex.z;
+						// //text.rotation.x = 0;
+						// //key.text.rotation.y = 3.14 / 2 - angle1;
+						// key.vertor = new THREE.Vector3(vertex.x * 2, vertex.y * 2, vertex.z * 2);
+						// if (key.text.position.z > 0) {
+						// key.text.lookAt(key.vertor);
+						// } else {
+						// key.text.lookAt(scene.position);
+						// }
+						//parent.add(key.text);
+						//scene.add(key.text);
+					}
+					// key.initText = function() {
+					// var text3d = new THREE.TextGeometry(key.string, {
+					// size : 30,
+					// height : 1,
+					// curveSegments : 1,
+					// // font : "helvetiker"
+					// });
+					//
+					// text3d.computeBoundingBox();
+					//
+					// var textMaterial = new THREE.MeshBasicMaterial({
+					// color : 0x000000,
+					// overdraw : true
+					// });
+					// key.text = new THREE.Mesh(text3d, textMaterial);
+					//
+					// var vertex = new THREE.Vector3(key.x, key.y, key.z);
+					// vertex.normalize();
+					// vertex.multiplyScalar(500);
+					// key.text.position.x = vertex.x;
+					// key.text.position.y = vertex.y;
+					// key.text.position.z = vertex.z;
+					// //text.rotation.x = 0;
+					// //key.text.rotation.y = 3.14 / 2 - angle1;
+					// key.vertor = new THREE.Vector3(vertex.x * 2, vertex.y * 2, vertex.z * 2);
+					// if (key.text.position.z > 0) {
+					// key.text.lookAt(key.vertor);
+					// } else {
+					// key.text.lookAt(scene.position);
+					// }
+					// parent.add(key.text);
+					// //scene.add(key.text);
+					// }
+					key.update = function() {
+
+						var vertex = new THREE.Vector3(key.x, key.y, key.z);
+						vertex.normalize();
+						vertex.multiplyScalar(500);
+						key.cube.position.set(vertex.x, vertex.y, vertex.z);
+						var vertor = new THREE.Vector3(vertex.x * 2, vertex.y * 2, vertex.z * 2);
+						key.text.lookAt(vertor);
+						key.cube.lookAt(vector);
+					}
+					key.turnText = function(angle) {
+						if (Math.sin(key.angle1 - angle) > 0) {
+							key.text.lookAt(key.vertor);
+						} else {
+							key.text.lookAt(scene.position);
+						}
+					}
+					key.initHexa();
+					key.initText();
+					return key;
+
+				}
+			}
+			var keys = new Array();
+			function initKeys() {
+
+				keys[0] = Key.createNew(";", 0, 0);
+				keys[1] = Key.createNew("L", Math.PI * 3 / 15, 0);
+				keys[2] = Key.createNew("K", Math.PI * 3 / 15 * 2, 0);
+				keys[3] = Key.createNew("J", Math.PI * 3 / 15 * 3, 0);
+				keys[4] = Key.createNew("H", Math.PI * 3 / 15 * 4, 0);
+				keys[5] = Key.createNew("G", Math.PI * 3 / 15 * 5, 0);
+				keys[6] = Key.createNew("F", Math.PI * 3 / 15 * 6, 0);
+				keys[7] = Key.createNew("D", Math.PI * 3 / 15 * 7, 0);
+				keys[8] = Key.createNew("S", Math.PI * 3 / 15 * 8, 0);
+				keys[9] = Key.createNew("A", Math.PI * 3 / 15 * 9, 0);
+
+				keys[10] = Key.createNew("P", 0 + Math.PI * 1 / 10 * 1, 0.25);
+				keys[11] = Key.createNew("O", Math.PI * 3 / 15 * 1 + Math.PI * 1 / 10, 0.25);
+				keys[12] = Key.createNew("I", Math.PI * 3 / 15 * 2 + Math.PI * 1 / 10, 0.25);
+				keys[13] = Key.createNew("U", Math.PI * 3 / 15 * 3 + Math.PI * 1 / 10, 0.25);
+				keys[14] = Key.createNew("Y", Math.PI * 3 / 15 * 4 + Math.PI * 1 / 10, 0.25);
+				keys[15] = Key.createNew("T", Math.PI * 3 / 15 * 5 + Math.PI * 1 / 10, 0.25);
+				keys[16] = Key.createNew("R", Math.PI * 3 / 15 * 6 + Math.PI * 1 / 10, 0.25);
+				keys[17] = Key.createNew("E", Math.PI * 3 / 15 * 7 + Math.PI * 1 / 10, 0.25);
+				keys[18] = Key.createNew("W", Math.PI * 3 / 15 * 8 + Math.PI * 1 / 10, 0.25);
+				keys[19] = Key.createNew("Q", Math.PI * 3 / 15 * 9 + Math.PI * 1 / 10, 0.25);
+				//
+				keys[20] = Key.createNew("/", 0 + Math.PI * 1 / 10, -0.25);
+				keys[21] = Key.createNew(".", Math.PI * 3 / 15 * 1 + Math.PI * 1 / 10, -0.25);
+				keys[22] = Key.createNew(",", Math.PI * 3 / 15 * 2 + Math.PI * 1 / 10, -0.25);
+				keys[23] = Key.createNew("M", Math.PI * 3 / 15 * 3 + Math.PI * 1 / 10, -0.25);
+				keys[24] = Key.createNew("N", Math.PI * 3 / 15 * 4 + Math.PI * 1 / 10, -0.25);
+				keys[25] = Key.createNew("B", Math.PI * 3 / 15 * 5 + Math.PI * 1 / 10, -0.25);
+				keys[26] = Key.createNew("V", Math.PI * 3 / 15 * 6 + Math.PI * 1 / 10, -0.25);
+				keys[27] = Key.createNew("C", Math.PI * 3 / 15 * 7 + Math.PI * 1 / 10, -0.25);
+				keys[28] = Key.createNew("X", Math.PI * 3 / 15 * 8 + Math.PI * 1 / 10, -0.25);
+				keys[29] = Key.createNew("Z", Math.PI * 3 / 15 * 9 + Math.PI * 1 / 10, -0.25);
+
+				keys[30] = Key.createNew("1", 0, 0.5);
+				keys[31] = Key.createNew("2", Math.PI * 3 / 15 * 1, 0.5);
+				keys[32] = Key.createNew("3", Math.PI * 3 / 15 * 2, 0.5);
+				keys[33] = Key.createNew("4", Math.PI * 3 / 15 * 3, 0.5);
+				keys[34] = Key.createNew("5", Math.PI * 3 / 15 * 4, 0.5);
+				keys[35] = Key.createNew("6", Math.PI * 3 / 15 * 5, 0.5);
+				keys[36] = Key.createNew("7", Math.PI * 3 / 15 * 6, 0.5);
+				keys[37] = Key.createNew("8", Math.PI * 3 / 15 * 7, 0.5);
+				keys[38] = Key.createNew("9", Math.PI * 3 / 15 * 8, 0.5);
+				keys[39] = Key.createNew("0", Math.PI * 3 / 15 * 9, 0.5);
+			}
+
+			function onWindowResize() {
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize(window.innerWidth, window.innerHeight);
+				rendererCSS3D.setSize(window.innerWidth, window.innerHeight);
+
+			}
+
+			function animate() {
+
+				requestAnimationFrame(animate);
+
+				//controls.update();
+				render();
+				//renderer2.render( scene2, camera );
+
+			}
+
+			function render() {
+				rendererCSS3D.render(scene, camera);
+				renderer.render(scene, camera);
+
+			}
+
+			var mouseXOnMouseDown = 0;
+			var mouseYOnMouseDown = 0;
+			var targetRotationOnMouseDownX = 0;
+			var targetRotationOnMouseDownY = 0;
+			function onDocumentMouseDown(event) {
+				document.addEventListener('mouseup', onDocumentMouseUp, false);
+				document.addEventListener("mousemove", onDocumentMouseMove, false);
+				event.preventDefault();
+
+				//get the starting position
+				mouseXOnMouseDown = event.clientX - windowHalfX;
+				mouseYOnMouseDown = event.clientY - windowHalfY
+				//set the starting rotation
+				targetRotationOnMouseDownX = parent.rotation.y;
+				targetRotationOnMouseDownY = parent.rotation.x;
+
+				mouse.x = (event.clientX / window.innerWidth ) * 2 - 1;
+				mouse.y = -(event.clientY / window.innerHeight ) * 2 + 1;
+				var vector = new THREE.Vector3(mouse.x, mouse.y, 0.5);
+				projector.unprojectVector(vector, camera);
+				var raycaster = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
+				var intersects = raycaster.intersectObjects(buttons);
+
+				if (intersects.length > 0) {
+					intersects[0].object.material.color.setHex(0x33FF00);
+				}
+
+				//previousButton = intersects[0];
+				// container.style.cursor = 'pointer';
+
+			}
+
+			function onDocumentMouseUp(event) {
+				//showSpecialKeys();
+				recoverKeys();
+				document.removeEventListener('mousemove', onDocumentMouseMove, false);
+				document.removeEventListener('mouseup', onDocumentMouseUp, false);
+			}
+
+			var mouseX = 0;
+			var mouseY = 0;
+
+			var mouseXOnMouseUp = 0;
+			var mouseYOnMouseUp = 0;
+			function onDocumentClick(event) {
+				//showKeys();
+				recoverKeys();
+				mouseXOnMouseUp = event.clientX - windowHalfX;
+				mouseYOnMouseUp = event.clientY - windowHalfY;
+				if ((mouseXOnMouseUp - mouseXOnMouseDown) * (mouseXOnMouseUp - mouseXOnMouseDown) + (mouseYOnMouseUp - mouseYOnMouseDown) * (mouseYOnMouseUp - mouseYOnMouseDown) < 20) {
+					var vector = new THREE.Vector3((event.clientX / window.innerWidth ) * 2 - 1, -(event.clientY / window.innerHeight ) * 2 + 1, 1);
+					projector.unprojectVector(vector, camera);
+					var raycaster = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
+					var intersects = raycaster.intersectObjects(buttons);
+					if (intersects.length > 0) {
+						//alert("zhong");
+						//intersects[0].object.material.color.setHex(0x22d2ff);
+						var element = document.getElementById("show");
+						switch(intersects[0].object.name) {
+							case "enter":
+								element.innerText += "\n";
+								break;
+							case "blank":
+								blank = 1;
+								break;
+							case "clear":
+								element.innerText = "Text:";
+								break;
+
+							case "back":
+								element.innerText = element.innerText.substr(0, element.innerText.length - 1);
+								break;
+							case "big":
+								camera.position.z -= 30;
+								break;
+							case "small":
+								camera.position.z += 30;
+								break;
+							default:
+								if (blank == 0) {
+									element.innerText += intersects[0].object.name;
+								} else if (blank == 1) {
+									element.innerText += " " + intersects[0].object.name;
+									blank = 0;
+								}
+
+						}
+						// if (intersects[0].object.name == "enter") {
+						// element.innerText +="\n";
+						//
+						// } else {
+						// element.innerText += intersects[0].object.name;
+						// }
+					}
+				}
+			}
+
+			function onDocumentDoubleClick(event) {
+				cacheKeys();
+				//showSpecialKeys();
+
+			}
+
+			var previousButton;
+			function onDocumentMouseMove(event) {
+				//cacheSpecialKeys();
+				//var e = event || window.event;
+				// event.preventDefault();
+				mouseX = event.clientX - windowHalfX;
+				mouseY = event.clientY - windowHalfY;
+				// var element = document.getElementById("rotation");
+				// element.innerText =targetRotation;
+				//the current rotation
+
+				parent.rotation.y = targetRotationOnMouseDownX - (mouseX - mouseXOnMouseDown ) * 0.005;
+				for (x in keys) {
+					keys[x].turnText(parent.rotation.y);
+				}
+				if (targetRotationOnMouseDownY - (mouseY - mouseYOnMouseDown ) * 0.002 < 0.1 * Math.PI && targetRotationOnMouseDownY - (mouseY - mouseYOnMouseDown ) * 0.002 > -0.02 * Math.PI) {
+					parent.rotation.x = targetRotationOnMouseDownY - (mouseY - mouseYOnMouseDown ) * 0.002;
+				}
+
+				//parent.rotation.y = targetRotation;
+				//parent.rotation.x += (targetRotationY - parent.rotation.x ) * 1;
+
+				mouse.x = (event.clientX / window.innerWidth ) * 2 - 1;
+				mouse.y = -(event.clientY / window.innerHeight ) * 2 + 1;
+
+				var vector = new THREE.Vector3(mouse.x, mouse.y, 0.5);
+				projector.unprojectVector(vector, camera);
+				var raycaster = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
+				var intersects = raycaster.intersectObjects(buttons);
+
+				if (intersects.length > 0) {
+
+					// if (INTERSECTED != intersects[0].object) {
+					//
+					// if (INTERSECTED)
+					// INTERSECTED.material.color.setHex(INTERSECTED.currentHex);
+					//
+					// INTERSECTED = intersects[0].object;
+					// INTERSECTED.currentHex = INTERSECTED.material.color.getHex();
+					//
+					// plane.position.copy(INTERSECTED.position);
+					// plane.lookAt(camera.position);
+					//
+					// }
+					recoverKeys();
+					intersects[0].object.material.color.setHex(0x33FF00);
+
+					//previousButton = intersects[0];
+					// container.style.cursor = 'pointer';
+
+				} else {
+					recoverKeys();
+					//previousButton.object.material.color.setHex(0x0078FF);
+
+					// if (INTERSECTED)
+					// INTERSECTED.material.color.setHex(INTERSECTED.currentHex);
+					//
+					// INTERSECTED = null;
+					//
+					// container.style.cursor = 'auto';
+
+				}
+
+			}
+
+			function recoverKeys() {
+				for (x in keys) {
+					keys[x].hexa.material.color.setHex(0x0078FF);
+				}
+				for (y in specialKeys) {
+					specialKeys[y].mesh.material.color.setHex(0x112271);
+				}
+			}
+
+			// function initShape() {
+			// var triangleShape = new THREE.Shape();
+			// triangleShape.moveTo(80, 20);
+			// triangleShape.lineTo(40, 80);
+			// triangleShape.lineTo(120, 80);
+			// triangleShape.lineTo(80, 20);
+			// // close path
+			// scene.add(triangleShape);
+			// }
+
+			var specialKeys = new Array();
+
+			function initSpecialKey() {
+				specialKeys[0] = SpecialKey.createNew(-300, -375, "small");
+				specialKeys[1] = SpecialKey.createNew(-175, -375, "back");
+				specialKeys[2] = SpecialKey.createNew(-50, -375, "enter");
+				specialKeys[3] = SpecialKey.createNew(75, -375, "big");
+				specialKeys[4] = SpecialKey.createNew(200, -375, "blank");
+				specialKeys[5] = SpecialKey.createNew(-50, -450, "clear");
+
+			}
+
+			// function initTable() {
+			// table[0] = ["del", -350, -350, 300];
+			// table[1] = ["back", -200, -350, 300];
+			// table[2] = ["enter", -50, -350, 300];
+			// table[3] = ["shift", 100, -350, 300];
+			// table[4] = ["clear", 250, -350, 300];
+			// }
+
+			function cache() {
+				for (var i = 0; i < keys.length; i++) {
+					//keys[i].hexa.material.color=Math.random() * 0xffffff;
+					keys[i].hexa.material.opacity = 0;
+					keys[i].text.material.opacity = 0;
+				}
+			}
+
+			function showKeys() {
+				for (var i = 0; i < keys.length; i++) {
+					if (keys[i].hexa.material.opacity < 0.7) {
+						keys[i].hexa.material.opacity += 0.001;
+						keys[i].text.material.opacity += 0.001;
+						window.setTimeout(showKeys, 100);
+					}
+				}
+			}
+
+			function showSpecialKeys() {
+				for (var i = 0; i < specialKeys.length; i++) {
+					//specialKeys[i].text.material.opacity = 1;
+					specialKeys[i].mesh.material.opacity = 0.5;
+					// window.setTimeout(cacheSpecialKeys, 100);
+				}
+			}
+
+			function cacheKeys() {
+				for (var i = 0; i < keys.length; i++) {
+					keys[i].hexa.material.opacity = 0;
+					keys[i].text.material.opacity = 0;
+				}
+			}
+
+			function cacheSpecialKeys() {
+				for (var i = 0; i < specialKeys.length; i++) {
+					//specialKeys[i].text.material.opacity = 0.2;
+					specialKeys[i].mesh.material.opacity = 0.2;
+					// specialKeys[i].mesh.position.z=0;
+					// specialKeys[i].text.position.z=0;
+					// window.setTimeout(cacheSpecialKeys, 100);
+				}
+			}
+
+			function initCSS3D() {
+				for (var i = 0; i < table.length; i++) {
+					var item = table[i];
+					var element = document.createElement('div');
+					element.className = 'element';
+					element.style.backgroundColor = 'rgba(0,127,127,' + (Math.random() * 0.5 + 0.25 ) + ')';
+					var symbol = document.createElement('div');
+					symbol.className = 'symbol';
+					symbol.textContent = item[0];
+					element.appendChild(symbol);
+					var object = new THREE.CSS3DObject(element);
+					var x = item[1];
+					var y = item[2];
+					var z = item[3];
+					object.position.x = x;
+					object.position.y = y;
+					object.position.z = z;
+					scene.add(object);
+				}
+
+				//var item = ["foxbao", "Hydrogen", "1.00794", 1, 1];
+
+			}
+
+			function onDocumentTouchstart(event) {
+				event.preventDefault();
+
+				mouseXOnMouseDown = event.changedTouches[0].clientX - windowHalfX;
+				mouseYOnMouseDown = event.changedTouches[0].clientY - windowHalfY;
+				//set the starting rotation
+				targetRotationOnMouseDownX = parent.rotation.y;
+				targetRotationOnMouseDownY = parent.rotation.x;
+
+				mouse.x = (event.changedTouches[0].pageX / window.innerWidth ) * 2 - 1;
+				mouse.y = -(event.changedTouches[0].pageY / window.innerHeight ) * 2 + 1;
+				var vector = new THREE.Vector3(mouse.x, mouse.y, 0.5);
+				projector.unprojectVector(vector, camera);
+				var raycaster = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
+				var intersects = raycaster.intersectObjects(buttons);
+				if (intersects.length > 0) {
+					intersects[0].object.material.color.setHex(0x33FF00);
+				}
+
+			}
+
+			function onDocumentTouchmove(event) {
+				event.preventDefault();
+				//cacheSpecialKeys();
+				mouseX = event.changedTouches[0].clientX - windowHalfX;
+				mouseY = event.changedTouches[0].clientY - windowHalfY;
+				parent.rotation.y = targetRotationOnMouseDownX - (mouseX - mouseXOnMouseDown ) * 0.02;
+				for (x in keys) {
+					keys[x].turnText(parent.rotation.y);
+				}
+				if (targetRotationOnMouseDownY - (mouseY - mouseYOnMouseDown ) * 0.005 < 0.15 * Math.PI && targetRotationOnMouseDownY - (mouseY - mouseYOnMouseDown ) * 0.005 > -0.05 * Math.PI) {
+					parent.rotation.x = targetRotationOnMouseDownY - (mouseY - mouseYOnMouseDown ) * 0.005;
+				}
+
+				// mouse.x = (event.clientX / window.innerWidth ) * 2 - 1;
+				// mouse.y = -(event.clientY / window.innerHeight ) * 2 + 1;
+
+				mouse.x = (event.changedTouches[0].pageX / window.innerWidth ) * 2 - 1;
+				mouse.y = -(event.changedTouches[0].pageY / window.innerHeight ) * 2 + 1;
+
+				var vector = new THREE.Vector3(mouse.x, mouse.y, 0.5);
+				projector.unprojectVector(vector, camera);
+				var raycaster = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
+				var intersects = raycaster.intersectObjects(buttons);
+
+				if (intersects.length > 0) {
+					recoverKeys();
+					intersects[0].object.material.color.setHex(0x33FF00);
+					previousButton = intersects[0];
+				} else {
+					recoverKeys();
+				}
+
+			}
+
+			function onDocumentTouchend(event) {
+				//recoverKeys();
+				event.preventDefault();
+				mouseX = event.changedTouches[0].clientX - windowHalfX;
+				mouseY = event.changedTouches[0].clientY - windowHalfY;
+				mouse.x = (event.changedTouches[0].pageX / window.innerWidth ) * 2 - 1;
+				mouse.y = -(event.changedTouches[0].pageY / window.innerHeight ) * 2 + 1;
+				var vector = new THREE.Vector3(mouse.x, mouse.y, 0.5);
+				projector.unprojectVector(vector, camera);
+				var raycaster = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
+				var intersects = raycaster.intersectObjects(buttons);
+				if (intersects.length > 0) {
+					//intersects[0].object.material.color.setHex(0x22d2ff);
+					var element = document.getElementById("show");
+
+					switch(intersects[0].object.name) {
+						case "enter":
+							element.innerText += "\n";
+							break;
+
+						case "blank":
+							blank = 1;
+							break;
+
+						case "clear":
+							element.innerText = "Text:";
+							break;
+
+						case "back":
+							element.innerText = element.innerText.substr(0, element.innerText.length - 1);
+							break;
+						case "big":
+							camera.position.z -= 30;
+							break;
+						case "small":
+							camera.position.z += 30;
+							break;
+						default:
+							if (blank == 0) {
+								element.innerText += intersects[0].object.name;
+							} else if (blank == 1) {
+								element.innerText += " " + intersects[0].object.name;
+								blank = 0;
+							}
+					}
+
+					//showSpecialKeys();
+				}
+				//showSpecialKeys();
+				recoverKeys();
+			}
+
+			function ok_1() {
+				alert("ok");
+			}
+
+			function init() {
+
+				initThree();
+				initCamera();
+				initScene();
+
+				//light is just for the image of MeshLamberMaterial
+				initLight();
+				initParent();
+				initKeys();
+				initSpecialKey();
+				//initTable();
+				initRenderer();
+				initRendererCSS3D();
+				//initCSS3D();
+				//Mouse for PC
+				document.addEventListener('mousedown', onDocumentMouseDown, false);
+				document.addEventListener('click', onDocumentClick, false);
+
+				//touch for pad
+				document.addEventListener("touchstart", onDocumentTouchstart, false);
+				document.addEventListener("touchmove", onDocumentTouchmove, false);
+				document.addEventListener("touchend", onDocumentTouchend, false);
+
+				window.addEventListener('resize', onWindowResize, false);
+
+				// document.addEventListener('dblclick', onDocumentDoubleClick, false);
+				//
+				// document.addEventListener('mouseup', onDocumentMouseUp, false);
+				// document.addEventListener("mousemove", onDocumentMouseMove, false);
+
+				// document.addEventListener("touchstart", onDocumentTouchstart, false);
+				// document.addEventListener("touchmove", onDocumentTouchmove, false);
+				// document.addEventListener("touchend", onDocumentTouchend, false);
+			}
+
+			init();
+			animate();
+		</script>
+
+		<!-- 		<div style="position:absolute;bottom:10px; width: 100%;text-align: center;">
+		<td><input type="button" name="button_1" value="button_1" onclick="ok_1()"></td>
+		<button id="shift" >
+		SHIFT
+		</button>
+		<button id="back">
+		BACK
+		</button>
+		<button id="blank">
+		BLANK
+		</button>
+		<button id="enter">
+		ENTER
+		</button>
+		</div> -->
+
+	</body>
+</html>

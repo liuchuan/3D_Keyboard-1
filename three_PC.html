@@ -107,6 +107,8 @@
 			var a;
 			var table = [];
 			var blank = 0;
+			var alpha = 3/15;
+			var side_length = 80;
 			function initThree() {
 
 				container = document.createElement('div');
@@ -256,6 +258,7 @@
 					key.cube
 					key.text
 					key.hexa
+					key.index = 0;
 					key.string = string;
 					key.angle1 = angle1;
 					key.angle2 = angle2;
@@ -265,13 +268,13 @@
 					key.z = Math.sin(key.angle1) * Math.cos(key.angle2);
 					key.y = Math.sin(angle2);
 
-					key.initHexa = function() {
+					key.initHexa = function(length) {
 						var vertex = new THREE.Vector3(key.x, key.y, key.z);
 						vertex.normalize();
 						vertex.multiplyScalar(400);
+						key.length = length;
 
 						var shape = new THREE.Shape();
-						key.length = 80;
 						shape.moveTo(key.length, 0);
 						shape.lineTo(0.5 * key.length, 0.5 * key.length * Math.sqrt(3));
 						shape.lineTo(-0.5 * key.length, 0.5 * key.length * Math.sqrt(3));
@@ -296,7 +299,6 @@
 						var vertor = new THREE.Vector3(vertex.x * 2, vertex.y * 2, vertex.z * 2);
 						key.hexa.lookAt(vertor);
 						key.hexa.name = key.string;
-						buttons.push(key.hexa);
 						parent.add(key.hexa);
 						//mesh.scale.set(1, 1, 1);
 					}
@@ -405,6 +407,33 @@
 						key.text.lookAt(vertor);
 						key.cube.lookAt(vector);
 					}
+					key.moveTo = function(newlength, new_angle1, new_angle2) {
+						
+						parent.remove(key.hexa);
+						
+						key.angle1 = new_angle1;
+						key.angle2 = new_angle2;
+						key.x = Math.cos(key.angle1) * Math.cos(key.angle2);
+						key.z = Math.sin(key.angle1) * Math.cos(key.angle2);
+						key.y = Math.sin(angle2);
+						key.initHexa(newlength);
+						//use the new key.hexa to replace buttons[key.index]
+						buttons.splice(key.index, 1, key.hexa);
+						parent.add(key.hexa);
+						
+						var vertex = new THREE.Vector3(key.x, key.y, key.z);
+						vertex.normalize();
+						vertex.multiplyScalar(400);
+						key.text.position.x = vertex.x;
+						key.text.position.y = vertex.y;
+						key.text.position.z = vertex.z;
+						key.vertor = new THREE.Vector3(vertex.x * 2, vertex.y * 2, vertex.z * 2);
+						if (key.text.position.z > 0) {
+							key.text.lookAt(key.vertor);
+						} else {
+							key.text.lookAt(scene.position);
+						}				
+					}
 					key.turnText = function(angle) {
 						if (Math.sin(key.angle1 - angle) > 0) {
 							key.text.lookAt(key.vertor);
@@ -412,58 +441,109 @@
 							key.text.lookAt(scene.position);
 						}
 					}
-					key.initHexa();
+					key.initHexa(80);
 					key.initText();
+					buttons.push(key.hexa);
+					key.index = buttons.length - 1;
+					parent.add(key.text);
 					return key;
 
 				}
 			}
 			var keys = new Array();
-			function initKeys() {
+			function initKeys(ratio) {
 
 				keys[0] = Key.createNew(";", 0, 0);
-				keys[1] = Key.createNew("L", Math.PI * 3 / 15, 0);
-				keys[2] = Key.createNew("K", Math.PI * 3 / 15 * 2, 0);
-				keys[3] = Key.createNew("J", Math.PI * 3 / 15 * 3, 0);
-				keys[4] = Key.createNew("H", Math.PI * 3 / 15 * 4, 0);
-				keys[5] = Key.createNew("G", Math.PI * 3 / 15 * 5, 0);
-				keys[6] = Key.createNew("F", Math.PI * 3 / 15 * 6, 0);
-				keys[7] = Key.createNew("D", Math.PI * 3 / 15 * 7, 0);
-				keys[8] = Key.createNew("S", Math.PI * 3 / 15 * 8, 0);
-				keys[9] = Key.createNew("A", Math.PI * 3 / 15 * 9, 0);
-
+				keys[1] = Key.createNew("L", Math.PI * ratio * 1, 0);
+				keys[2] = Key.createNew("K", Math.PI * ratio * 2, 0);
+				keys[3] = Key.createNew("J", Math.PI * ratio * 3, 0);
+				keys[4] = Key.createNew("H", Math.PI * ratio * 4, 0);
+				keys[5] = Key.createNew("G", Math.PI * ratio * 5, 0);
+				keys[6] = Key.createNew("F", Math.PI * ratio * 6, 0);
+				keys[7] = Key.createNew("D", Math.PI * ratio * 7, 0);
+				keys[8] = Key.createNew("S", Math.PI * ratio * 8, 0);
+				keys[9] = Key.createNew("A", Math.PI * ratio * 9, 0);
+				
 				keys[10] = Key.createNew("P", 0 + Math.PI * 1 / 10 * 1, 0.25);
-				keys[11] = Key.createNew("O", Math.PI * 3 / 15 * 1 + Math.PI * 1 / 10, 0.25);
-				keys[12] = Key.createNew("I", Math.PI * 3 / 15 * 2 + Math.PI * 1 / 10, 0.25);
-				keys[13] = Key.createNew("U", Math.PI * 3 / 15 * 3 + Math.PI * 1 / 10, 0.25);
-				keys[14] = Key.createNew("Y", Math.PI * 3 / 15 * 4 + Math.PI * 1 / 10, 0.25);
-				keys[15] = Key.createNew("T", Math.PI * 3 / 15 * 5 + Math.PI * 1 / 10, 0.25);
-				keys[16] = Key.createNew("R", Math.PI * 3 / 15 * 6 + Math.PI * 1 / 10, 0.25);
-				keys[17] = Key.createNew("E", Math.PI * 3 / 15 * 7 + Math.PI * 1 / 10, 0.25);
-				keys[18] = Key.createNew("W", Math.PI * 3 / 15 * 8 + Math.PI * 1 / 10, 0.25);
-				keys[19] = Key.createNew("Q", Math.PI * 3 / 15 * 9 + Math.PI * 1 / 10, 0.25);
+				keys[11] = Key.createNew("O", Math.PI * ratio * 1 + Math.PI * 1 / 10, 0.25);
+				keys[12] = Key.createNew("I", Math.PI * ratio * 2 + Math.PI * 1 / 10, 0.25);
+				keys[13] = Key.createNew("U", Math.PI * ratio * 3 + Math.PI * 1 / 10, 0.25);
+				keys[14] = Key.createNew("Y", Math.PI * ratio * 4 + Math.PI * 1 / 10, 0.25);
+				keys[15] = Key.createNew("T", Math.PI * ratio * 5 + Math.PI * 1 / 10, 0.25);
+				keys[16] = Key.createNew("R", Math.PI * ratio * 6 + Math.PI * 1 / 10, 0.25);
+				keys[17] = Key.createNew("E", Math.PI * ratio * 7 + Math.PI * 1 / 10, 0.25);
+				keys[18] = Key.createNew("W", Math.PI * ratio * 8 + Math.PI * 1 / 10, 0.25);
+				keys[19] = Key.createNew("Q", Math.PI * ratio * 9 + Math.PI * 1 / 10, 0.25);
 				//
 				keys[20] = Key.createNew("/", 0 + Math.PI * 1 / 10, -0.25);
-				keys[21] = Key.createNew(".", Math.PI * 3 / 15 * 1 + Math.PI * 1 / 10, -0.25);
-				keys[22] = Key.createNew(",", Math.PI * 3 / 15 * 2 + Math.PI * 1 / 10, -0.25);
-				keys[23] = Key.createNew("M", Math.PI * 3 / 15 * 3 + Math.PI * 1 / 10, -0.25);
-				keys[24] = Key.createNew("N", Math.PI * 3 / 15 * 4 + Math.PI * 1 / 10, -0.25);
-				keys[25] = Key.createNew("B", Math.PI * 3 / 15 * 5 + Math.PI * 1 / 10, -0.25);
-				keys[26] = Key.createNew("V", Math.PI * 3 / 15 * 6 + Math.PI * 1 / 10, -0.25);
-				keys[27] = Key.createNew("C", Math.PI * 3 / 15 * 7 + Math.PI * 1 / 10, -0.25);
-				keys[28] = Key.createNew("X", Math.PI * 3 / 15 * 8 + Math.PI * 1 / 10, -0.25);
-				keys[29] = Key.createNew("Z", Math.PI * 3 / 15 * 9 + Math.PI * 1 / 10, -0.25);
+				keys[21] = Key.createNew(".", Math.PI * ratio * 1 + Math.PI * 1 / 10, -0.25);
+				keys[22] = Key.createNew(",", Math.PI * ratio * 2 + Math.PI * 1 / 10, -0.25);
+				keys[23] = Key.createNew("M", Math.PI * ratio * 3 + Math.PI * 1 / 10, -0.25);
+				keys[24] = Key.createNew("N", Math.PI * ratio * 4 + Math.PI * 1 / 10, -0.25);
+				keys[25] = Key.createNew("B", Math.PI * ratio * 5 + Math.PI * 1 / 10, -0.25);
+				keys[26] = Key.createNew("V", Math.PI * ratio * 6 + Math.PI * 1 / 10, -0.25);
+				keys[27] = Key.createNew("C", Math.PI * ratio * 7 + Math.PI * 1 / 10, -0.25);
+				keys[28] = Key.createNew("X", Math.PI * ratio * 8 + Math.PI * 1 / 10, -0.25);
+				keys[29] = Key.createNew("Z", Math.PI * ratio * 9 + Math.PI * 1 / 10, -0.25);
 
 				keys[30] = Key.createNew("1", 0, 0.5);
-				keys[31] = Key.createNew("2", Math.PI * 3 / 15 * 1, 0.5);
-				keys[32] = Key.createNew("3", Math.PI * 3 / 15 * 2, 0.5);
-				keys[33] = Key.createNew("4", Math.PI * 3 / 15 * 3, 0.5);
-				keys[34] = Key.createNew("5", Math.PI * 3 / 15 * 4, 0.5);
-				keys[35] = Key.createNew("6", Math.PI * 3 / 15 * 5, 0.5);
-				keys[36] = Key.createNew("7", Math.PI * 3 / 15 * 6, 0.5);
-				keys[37] = Key.createNew("8", Math.PI * 3 / 15 * 7, 0.5);
-				keys[38] = Key.createNew("9", Math.PI * 3 / 15 * 8, 0.5);
-				keys[39] = Key.createNew("0", Math.PI * 3 / 15 * 9, 0.5);
+				keys[31] = Key.createNew("2", Math.PI * ratio * 1, 0.5);
+				keys[32] = Key.createNew("3", Math.PI * ratio * 2, 0.5);
+				keys[33] = Key.createNew("4", Math.PI * ratio * 3, 0.5);
+				keys[34] = Key.createNew("5", Math.PI * ratio * 4, 0.5);
+				keys[35] = Key.createNew("6", Math.PI * ratio * 5, 0.5);
+				keys[36] = Key.createNew("7", Math.PI * ratio * 6, 0.5);
+				keys[37] = Key.createNew("8", Math.PI * ratio * 7, 0.5);
+				keys[38] = Key.createNew("9", Math.PI * ratio * 8, 0.5);
+				keys[39] = Key.createNew("0", Math.PI * ratio * 9, 0.5);
+			}
+
+			function adjustKeySize(length, ratio) {
+
+				if (length < 30 || length > 80) return;
+				keys[0].moveTo(length, 0, 0);
+				keys[1].moveTo(length, Math.PI * ratio * 1, 0);
+				keys[2].moveTo(length, Math.PI * ratio * 2, 0);
+				keys[3].moveTo(length, Math.PI * ratio * 3, 0);
+				keys[4].moveTo(length, Math.PI * ratio * 4, 0);
+				keys[5].moveTo(length, Math.PI * ratio * 5, 0);
+				keys[6].moveTo(length, Math.PI * ratio * 6, 0);
+				keys[7].moveTo(length, Math.PI * ratio * 7, 0);
+				keys[8].moveTo(length, Math.PI * ratio * 8, 0);
+				keys[9].moveTo(length, Math.PI * ratio * 9, 0);
+				
+				keys[10].moveTo(length, 0 + Math.PI * ratio / 2, 0.25);
+				keys[11].moveTo(length, Math.PI * ratio * 1 + Math.PI * ratio / 2, 0.25);
+				keys[12].moveTo(length, Math.PI * ratio * 2 + Math.PI * ratio / 2, 0.25);
+				keys[13].moveTo(length, Math.PI * ratio * 3 + Math.PI * ratio / 2, 0.25);
+				keys[14].moveTo(length, Math.PI * ratio * 4 + Math.PI * ratio / 2, 0.25);
+				keys[15].moveTo(length, Math.PI * ratio * 5 + Math.PI * ratio / 2, 0.25);
+				keys[16].moveTo(length, Math.PI * ratio * 6 + Math.PI * ratio / 2, 0.25);
+				keys[17].moveTo(length, Math.PI * ratio * 7 + Math.PI * ratio / 2, 0.25);
+				keys[18].moveTo(length, Math.PI * ratio * 8 + Math.PI * ratio / 2, 0.25);
+				keys[19].moveTo(length, Math.PI * ratio * 9 + Math.PI * ratio / 2, 0.25);
+				//
+				keys[20].moveTo(length, 0 + Math.PI * ratio / 2, -0.25);
+				keys[21].moveTo(length, Math.PI * ratio * 1 + Math.PI * ratio / 2, -0.25);
+				keys[22].moveTo(length, Math.PI * ratio * 2 + Math.PI * ratio / 2, -0.25);
+				keys[23].moveTo(length, Math.PI * ratio * 3 + Math.PI * ratio / 2, -0.25);
+				keys[24].moveTo(length, Math.PI * ratio * 4 + Math.PI * ratio / 2, -0.25);
+				keys[25].moveTo(length, Math.PI * ratio * 5 + Math.PI * ratio / 2, -0.25);
+				keys[26].moveTo(length, Math.PI * ratio * 6 + Math.PI * ratio / 2, -0.25);
+				keys[27].moveTo(length, Math.PI * ratio * 7 + Math.PI * ratio / 2, -0.25);
+				keys[28].moveTo(length, Math.PI * ratio * 8 + Math.PI * ratio / 2, -0.25);
+				keys[29].moveTo(length, Math.PI * ratio * 9 + Math.PI * ratio / 2, -0.25);
+				
+    				keys[30].moveTo(length, 0, 0.5);
+				keys[31].moveTo(length, Math.PI * ratio * 1, 0.5);
+				keys[32].moveTo(length, Math.PI * ratio * 2, 0.5);
+				keys[33].moveTo(length, Math.PI * ratio * 3, 0.5);
+				keys[34].moveTo(length, Math.PI * ratio * 4, 0.5);
+				keys[35].moveTo(length, Math.PI * ratio * 5, 0.5);
+				keys[36].moveTo(length, Math.PI * ratio * 6, 0.5);
+				keys[37].moveTo(length, Math.PI * ratio * 7, 0.5);
+				keys[38].moveTo(length, Math.PI * ratio * 8, 0.5);
+				keys[39].moveTo(length, Math.PI * ratio * 9, 0.5);
 			}
 
 			function onWindowResize() {
@@ -550,9 +630,6 @@
 						//intersects[0].object.material.color.setHex(0x22d2ff);
 						var element = document.getElementById("show");
 						switch(intersects[0].object.name) {
-							case "enter":
-								element.innerText += "\n";
-								break;
 							case "blank":
 								blank = 1;
 								break;
@@ -564,10 +641,20 @@
 								element.innerText = element.innerText.substr(0, element.innerText.length - 1);
 								break;
 							case "big":
-								camera.position.z -= 30;
+								if (side_length > 80) break;
+								else {
+									side_length += 10;
+									alpha += 1/30;
+									adjustKeySize(side_length, alpha);	
+								}
 								break;
 							case "small":
-								camera.position.z += 30;
+								if (side_length < 30) break;
+								else {
+									side_length -= 10;
+									alpha -= 1/30;
+									adjustKeySize(side_length, alpha); 										
+								}				
 								break;
 							default:
 								if (blank == 0) {
@@ -681,12 +768,10 @@
 			var specialKeys = new Array();
 
 			function initSpecialKey() {
-				specialKeys[0] = SpecialKey.createNew(-300, -375, "small");
-				specialKeys[1] = SpecialKey.createNew(-175, -375, "back");
-				specialKeys[2] = SpecialKey.createNew(-50, -375, "enter");
-				specialKeys[3] = SpecialKey.createNew(75, -375, "big");
-				specialKeys[4] = SpecialKey.createNew(200, -375, "blank");
-				specialKeys[5] = SpecialKey.createNew(-50, -450, "clear");
+				specialKeys[0] = SpecialKey.createNew(-300, -375, "big");				
+				specialKeys[1] = SpecialKey.createNew(-140, -375, "small");
+				specialKeys[2] = SpecialKey.createNew(20, -375, "back");
+				specialKeys[3] = SpecialKey.createNew(180, -375, "clear");
 
 			}
 
@@ -835,36 +920,42 @@
 					//intersects[0].object.material.color.setHex(0x22d2ff);
 					var element = document.getElementById("show");
 
-					switch(intersects[0].object.name) {
-						case "enter":
-							element.innerText += "\n";
-							break;
+						switch(intersects[0].object.name) {
+							case "blank":
+								blank = 1;
+								break;
+							case "clear":
+								element.innerText = "Text:";
+								break;
 
-						case "blank":
-							blank = 1;
-							break;
+							case "back":
+								element.innerText = element.innerText.substr(0, element.innerText.length - 1);
+								break;
+							case "big":
+								if (side_length > 80) break;
+								else {
+									side_length += 10;
+									alpha += 1/30;
+									adjustKeySize(side_length, alpha);	
+								}
+								break;
+							case "small":
+								if (side_length < 30) break;
+								else {
+									side_length -= 10;
+									alpha -= 1/30;
+									adjustKeySize(side_length, alpha); 										
+								}				
+								break;
+							default:
+								if (blank == 0) {
+									element.innerText += intersects[0].object.name;
+								} else if (blank == 1) {
+									element.innerText += " " + intersects[0].object.name;
+									blank = 0;
+								}
 
-						case "clear":
-							element.innerText = "Text:";
-							break;
-
-						case "back":
-							element.innerText = element.innerText.substr(0, element.innerText.length - 1);
-							break;
-						case "big":
-							camera.position.z -= 30;
-							break;
-						case "small":
-							camera.position.z += 30;
-							break;
-						default:
-							if (blank == 0) {
-								element.innerText += intersects[0].object.name;
-							} else if (blank == 1) {
-								element.innerText += " " + intersects[0].object.name;
-								blank = 0;
-							}
-					}
+						}
 
 					//showSpecialKeys();
 				}
@@ -885,7 +976,7 @@
 				//light is just for the image of MeshLamberMaterial
 				initLight();
 				initParent();
-				initKeys();
+				initKeys(3/15);
 				initSpecialKey();
 				//initTable();
 				initRenderer();
